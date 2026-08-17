@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #171310;
+  --surface: #241d15;
+  --surface-raised: #2f2717;
+  --gold: #d1a350;
+  --gold-bright: #f4cd7c;
+  --ink: #f3ead8;
+  --muted: #9c8f74;
+  --jade: #6ea88a;
+  --rust: #c1614a;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-gold: var(--gold);
+  --color-gold-bright: var(--gold-bright);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-jade: var(--jade);
+  --color-rust: var(--rust);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body), sans-serif;
+  background-image: radial-gradient(
+    ellipse 900px 500px at 50% -10%,
+    color-mix(in srgb, var(--gold) 10%, transparent),
+    transparent 70%
+  );
+  background-repeat: no-repeat;
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold-bright);
+  outline-offset: 2px;
+}
+
+@keyframes coin-settle {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.coin-settle {
+  animation: coin-settle 260ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coin-settle {
+    animation: none;
+  }
+}
