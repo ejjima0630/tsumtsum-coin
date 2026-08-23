@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Zen_Old_Mincho, Zen_Maru_Gothic, Space_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -23,6 +23,15 @@ const spaceMono = Space_Mono({
 export const metadata: Metadata = {
   title: "ツム貯金",
   description: "所持コインの推移から、その日の稼ぎを逆算して記録する。",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "ツム貯金",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#171310",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
