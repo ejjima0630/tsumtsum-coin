@@ -235,39 +235,42 @@ function HistoryRow({
         onPointerCancel={endDrag}
         onClick={handleRowClick}
         style={{ transform: `translateX(${offset}px)`, touchAction: "pan-y" }}
-        className={`relative cursor-pointer select-none bg-surface-raised px-3 py-2.5 ${dragging ? "" : "transition-transform duration-150 ease-out"}`}
+        className={`relative flex cursor-pointer select-none items-center justify-between gap-2 bg-surface-raised px-3 py-2.5 ${dragging ? "" : "transition-transform duration-150 ease-out"}`}
       >
-        <div className="flex items-baseline gap-2">
-          <span className="whitespace-nowrap font-mono text-xs text-muted">{entry.date}</span>
-          {earned === null && (
-            <span className="whitespace-nowrap rounded bg-bg px-1.5 py-0.5 text-[10px] text-muted">基準</span>
-          )}
-          {earned && earned.spanDays > 1 && (
-            <span className="whitespace-nowrap rounded bg-bg px-1.5 py-0.5 text-[10px] text-gold-bright">
-              {earned.spanDays}日分
-            </span>
-          )}
-          {earned && (
-            <span
-              className={`ml-auto shrink-0 whitespace-nowrap text-right font-mono tabular-nums text-sm ${earned.isNegative ? "text-rust" : "text-jade"}`}
-            >
-              {earned.earned >= 0 ? "+" : ""}
-              {yen(earned.earned)}
-            </span>
-          )}
+        <div className="min-w-0">
+          <div className="flex items-baseline gap-2">
+            <span className="whitespace-nowrap font-mono text-xs text-muted">{entry.date}</span>
+            {earned === null && (
+              <span className="whitespace-nowrap rounded bg-bg px-1.5 py-0.5 text-[10px] text-muted">基準</span>
+            )}
+            {earned && earned.spanDays > 1 && (
+              <span className="whitespace-nowrap rounded bg-bg px-1.5 py-0.5 text-[10px] text-gold-bright">
+                {earned.spanDays}日分
+              </span>
+            )}
+          </div>
+
+          <div className="mt-1 overflow-x-auto">
+            <div className="whitespace-nowrap font-mono tabular-nums text-ink">
+              {yen(entry.balance)} <span className="text-xs text-muted">コイン</span>
+            </div>
+            {spent > 0 && (
+              <div className="whitespace-nowrap text-xs text-muted">
+                使用 {yen(spent)}
+                {entry.gachaCount > 0 ? `(ガチャ${entry.gachaCount}回)` : ""}
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="mt-1 overflow-x-auto">
-          <div className="whitespace-nowrap font-mono tabular-nums text-ink">
-            {yen(entry.balance)} <span className="text-xs text-muted">コイン</span>
-          </div>
-          {spent > 0 && (
-            <div className="whitespace-nowrap text-xs text-muted">
-              使用 {yen(spent)}
-              {entry.gachaCount > 0 ? `(ガチャ${entry.gachaCount}回)` : ""}
-            </div>
-          )}
-        </div>
+        {earned && (
+          <span
+            className={`shrink-0 whitespace-nowrap text-right font-mono tabular-nums text-sm ${earned.isNegative ? "text-rust" : "text-jade"}`}
+          >
+            {earned.earned >= 0 ? "+" : ""}
+            {yen(earned.earned)}
+          </span>
+        )}
       </div>
     </li>
   );
