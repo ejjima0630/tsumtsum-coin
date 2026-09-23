@@ -165,50 +165,58 @@ function HistoryRow({
   }
 
   return (
-    <li className="flex items-center gap-3 rounded-xl bg-surface-raised px-3 py-2.5">
-      <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-2">
-          <span className="font-mono text-xs text-muted">{entry.date}</span>
-          {earned === null && <span className="rounded bg-bg px-1.5 py-0.5 text-[10px] text-muted">基準</span>}
-          {earned && earned.spanDays > 1 && (
-            <span className="rounded bg-bg px-1.5 py-0.5 text-[10px] text-gold-bright">{earned.spanDays}日分</span>
-          )}
-        </div>
-        <div className="font-mono tabular-nums text-ink">
-          {yen(entry.balance)} <span className="text-xs text-muted">コイン</span>
-        </div>
-        {spent > 0 && (
-          <div className="text-xs text-muted">
-            使用 {yen(spent)}
-            {entry.gachaCount > 0 ? `(ガチャ${entry.gachaCount}回)` : ""}
-          </div>
+    <li className="rounded-xl bg-surface-raised px-3 py-2.5">
+      <div className="flex items-baseline gap-2">
+        <span className="whitespace-nowrap font-mono text-xs text-muted">{entry.date}</span>
+        {earned === null && (
+          <span className="whitespace-nowrap rounded bg-bg px-1.5 py-0.5 text-[10px] text-muted">基準</span>
+        )}
+        {earned && earned.spanDays > 1 && (
+          <span className="whitespace-nowrap rounded bg-bg px-1.5 py-0.5 text-[10px] text-gold-bright">
+            {earned.spanDays}日分
+          </span>
+        )}
+        {earned && (
+          <span
+            className={`ml-auto shrink-0 whitespace-nowrap text-right font-mono tabular-nums text-sm ${earned.isNegative ? "text-rust" : "text-jade"}`}
+          >
+            {earned.earned >= 0 ? "+" : ""}
+            {yen(earned.earned)}
+          </span>
         )}
       </div>
 
-      {earned && (
-        <div className={`shrink-0 text-right font-mono tabular-nums text-sm ${earned.isNegative ? "text-rust" : "text-jade"}`}>
-          {earned.earned >= 0 ? "+" : ""}
-          {yen(earned.earned)}
+      <div className="mt-1 flex items-end justify-between gap-2">
+        <div className="min-w-0 overflow-x-auto">
+          <div className="whitespace-nowrap font-mono tabular-nums text-ink">
+            {yen(entry.balance)} <span className="text-xs text-muted">コイン</span>
+          </div>
+          {spent > 0 && (
+            <div className="whitespace-nowrap text-xs text-muted">
+              使用 {yen(spent)}
+              {entry.gachaCount > 0 ? `(ガチャ${entry.gachaCount}回)` : ""}
+            </div>
+          )}
         </div>
-      )}
 
-      <div className="flex shrink-0 gap-1">
-        <button
-          type="button"
-          onClick={startEdit}
-          aria-label="編集"
-          className="rounded-md px-2 py-1 text-xs text-muted hover:text-gold-bright"
-        >
-          編集
-        </button>
-        <button
-          type="button"
-          onClick={remove}
-          aria-label="削除"
-          className="rounded-md px-2 py-1 text-xs text-muted hover:text-rust"
-        >
-          削除
-        </button>
+        <div className="flex shrink-0 gap-1">
+          <button
+            type="button"
+            onClick={startEdit}
+            aria-label="編集"
+            className="rounded-md px-2 py-1 text-xs text-muted hover:text-gold-bright"
+          >
+            編集
+          </button>
+          <button
+            type="button"
+            onClick={remove}
+            aria-label="削除"
+            className="rounded-md px-2 py-1 text-xs text-muted hover:text-rust"
+          >
+            削除
+          </button>
+        </div>
       </div>
     </li>
   );

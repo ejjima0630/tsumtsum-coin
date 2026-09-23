@@ -66,8 +66,10 @@ export default function BalanceInput({ lastEntry, existingEntries, onSubmit }: P
 
       {lastEntry && (
         <p className="text-sm text-muted">
-          前回 <span className="font-mono">{lastEntry.date}</span> →{" "}
-          <span className="font-mono tabular-nums text-ink">{yen(lastEntry.balance)}</span> コイン
+          前回 <span className="whitespace-nowrap font-mono">{lastEntry.date}</span> →{" "}
+          <span className="whitespace-nowrap">
+            <span className="font-mono tabular-nums text-ink">{yen(lastEntry.balance)}</span> コイン
+          </span>
         </p>
       )}
 
@@ -118,9 +120,13 @@ export default function BalanceInput({ lastEntry, existingEntries, onSubmit }: P
 
       {preview !== null && lastEntry && (
         <p className={`text-sm ${preview < 0 ? "text-rust" : "text-jade"}`}>
-          {preview < 0
-            ? `計算上マイナスです(${yen(preview)})。使った額の入力漏れかもしれません`
-            : `→ ${lastEntry.date} の稼ぎ ${yen(preview)} コイン`}
+          {preview < 0 ? (
+            `計算上マイナスです(${yen(preview)})。使った額の入力漏れかもしれません`
+          ) : (
+            <>
+              → {lastEntry.date} の稼ぎ <span className="whitespace-nowrap">{yen(preview)} コイン</span>
+            </>
+          )}
         </p>
       )}
 

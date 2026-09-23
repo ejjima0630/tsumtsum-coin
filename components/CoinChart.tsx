@@ -169,12 +169,12 @@ export default function CoinChart({ dailyEarnings }: { dailyEarnings: DailyEarni
             </svg>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-muted">
-            <span>
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-muted">
+            <span className="whitespace-nowrap">
               平均 <span className="font-mono tabular-nums text-ink">{yen(average)}</span> コイン
             </span>
             {selected && (
-              <span className="text-ink">
+              <span className="whitespace-nowrap text-ink">
                 {selected.date}
                 {selected.estimated ? "(推定)" : ""}:{" "}
                 <span className="font-mono tabular-nums text-gold-bright">{yen(selected.earned)}</span> コイン
