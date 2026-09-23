@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { DailyEarning, Entry, UNLOCK_STEP, spentOn } from "@/lib/earnings";
+
+const REVEAL_WIDTH = 76; // px width of the swipe-revealed delete button
+const DRAG_THRESHOLD = 4; // px of pointer movement before a press counts as a drag, not a tap
 
 type Props = {
   entries: Entry[]; // ascending by date
@@ -37,7 +40,10 @@ export default function EntryHistory({ entries, dailyEarnings, onEdit, onDelete 
 
   return (
     <section className="rounded-2xl bg-surface p-5 space-y-3">
-      <h2 className="font-display text-sm tracking-[0.2em] text-gold-bright">履歴</h2>
+      <div className="flex items-baseline justify-between">
+        <h2 className="font-display text-sm tracking-[0.2em] text-gold-bright">履歴</h2>
+        <p className="text-[11px] text-muted">タップで編集・左スワイプで削除</p>
+      </div>
       <ul className="space-y-2">
         {rows.map(({ entry, earned, prevDate }) => (
           <HistoryRow
@@ -73,11 +79,56 @@ function HistoryRow({
   const [unlockSpent, setUnlockSpent] = useState(entry.unlockSpent);
   const [saving, setSaving] = useState(false);
 
+  // Swipe-left-to-reveal delete. offset is the row's horizontal translate:
+  // 0 = closed, -REVEAL_WIDTH = fully open. Pointer Events so the same code
+  // handles touch and mouse (and so this is testable with a plain mouse drag).
+  const [offset, setOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const dragRef = useRef<{ startX: number; startOffset: number } | null>(null);
+  // Set on pointerup if the press moved past the threshold, cleared by the
+  // click handler — click fires *after* pointerup, so this can't just live
+  // on dragRef (that's already cleared by then).
+  const justDraggedRef = useRef(false);
+
   function startEdit() {
     setBalanceText(String(entry.balance));
     setGachaCount(entry.gachaCount);
     setUnlockSpent(entry.unlockSpent);
+    setOffset(0);
     setEditing(true);
+  }
+
+  function onPointerDown(e: React.PointerEvent) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragRef.current = { startX: e.clientX, startOffset: offset };
+    setDragging(true);
+  }
+
+  function onPointerMove(e: React.PointerEvent) {
+    const drag = dragRef.current;
+    if (!drag) return;
+    setOffset(Math.min(0, Math.max(-REVEAL_WIDTH, drag.startOffset + (e.clientX - drag.startX))));
+  }
+
+  function endDrag(e: React.PointerEvent) {
+    const drag = dragRef.current;
+    if (!drag) return;
+    if (Math.abs(e.clientX - drag.startX) > DRAG_THRESHOLD) justDraggedRef.current = true;
+    setDragging(false);
+    setOffset((current) => (current < -REVEAL_WIDTH / 2 ? -REVEAL_WIDTH : 0));
+    dragRef.current = null;
+  }
+
+  function handleRowClick() {
+    if (justDraggedRef.current) {
+      justDraggedRef.current = false;
+      return;
+    }
+    if (offset !== 0) {
+      setOffset(0);
+      return;
+    }
+    startEdit();
   }
 
   async function save() {
@@ -165,56 +216,58 @@ function HistoryRow({
   }
 
   return (
-    <li className="rounded-xl bg-surface-raised px-3 py-2.5">
-      <div className="flex items-baseline gap-2">
-        <span className="whitespace-nowrap font-mono text-xs text-muted">{entry.date}</span>
-        {earned === null && (
-          <span className="whitespace-nowrap rounded bg-bg px-1.5 py-0.5 text-[10px] text-muted">基準</span>
-        )}
-        {earned && earned.spanDays > 1 && (
-          <span className="whitespace-nowrap rounded bg-bg px-1.5 py-0.5 text-[10px] text-gold-bright">
-            {earned.spanDays}日分
-          </span>
-        )}
-        {earned && (
-          <span
-            className={`ml-auto shrink-0 whitespace-nowrap text-right font-mono tabular-nums text-sm ${earned.isNegative ? "text-rust" : "text-jade"}`}
-          >
-            {earned.earned >= 0 ? "+" : ""}
-            {yen(earned.earned)}
-          </span>
-        )}
-      </div>
-
-      <div className="mt-1 overflow-x-auto">
-        <div className="whitespace-nowrap font-mono tabular-nums text-ink">
-          {yen(entry.balance)} <span className="text-xs text-muted">コイン</span>
-        </div>
-        {spent > 0 && (
-          <div className="whitespace-nowrap text-xs text-muted">
-            使用 {yen(spent)}
-            {entry.gachaCount > 0 ? `(ガチャ${entry.gachaCount}回)` : ""}
-          </div>
-        )}
-      </div>
-
-      <div className="mt-1.5 flex justify-end gap-1">
-        <button
-          type="button"
-          onClick={startEdit}
-          aria-label="編集"
-          className="rounded-md px-2 py-1 text-xs text-muted hover:text-gold-bright"
-        >
-          編集
-        </button>
+    <li className="relative overflow-hidden rounded-xl">
+      <div className="absolute inset-y-0 right-0 flex items-stretch" style={{ width: REVEAL_WIDTH }}>
         <button
           type="button"
           onClick={remove}
           aria-label="削除"
-          className="rounded-md px-2 py-1 text-xs text-muted hover:text-rust"
+          className="flex-1 bg-rust text-sm font-bold text-ink"
         >
           削除
         </button>
+      </div>
+
+      <div
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onClick={handleRowClick}
+        style={{ transform: `translateX(${offset}px)`, touchAction: "pan-y" }}
+        className={`relative cursor-pointer select-none bg-surface-raised px-3 py-2.5 ${dragging ? "" : "transition-transform duration-150 ease-out"}`}
+      >
+        <div className="flex items-baseline gap-2">
+          <span className="whitespace-nowrap font-mono text-xs text-muted">{entry.date}</span>
+          {earned === null && (
+            <span className="whitespace-nowrap rounded bg-bg px-1.5 py-0.5 text-[10px] text-muted">基準</span>
+          )}
+          {earned && earned.spanDays > 1 && (
+            <span className="whitespace-nowrap rounded bg-bg px-1.5 py-0.5 text-[10px] text-gold-bright">
+              {earned.spanDays}日分
+            </span>
+          )}
+          {earned && (
+            <span
+              className={`ml-auto shrink-0 whitespace-nowrap text-right font-mono tabular-nums text-sm ${earned.isNegative ? "text-rust" : "text-jade"}`}
+            >
+              {earned.earned >= 0 ? "+" : ""}
+              {yen(earned.earned)}
+            </span>
+          )}
+        </div>
+
+        <div className="mt-1 overflow-x-auto">
+          <div className="whitespace-nowrap font-mono tabular-nums text-ink">
+            {yen(entry.balance)} <span className="text-xs text-muted">コイン</span>
+          </div>
+          {spent > 0 && (
+            <div className="whitespace-nowrap text-xs text-muted">
+              使用 {yen(spent)}
+              {entry.gachaCount > 0 ? `(ガチャ${entry.gachaCount}回)` : ""}
+            </div>
+          )}
+        </div>
       </div>
     </li>
   );
