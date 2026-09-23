@@ -186,37 +186,35 @@ function HistoryRow({
         )}
       </div>
 
-      <div className="mt-1 flex items-end justify-between gap-2">
-        <div className="min-w-0 overflow-x-auto">
-          <div className="whitespace-nowrap font-mono tabular-nums text-ink">
-            {yen(entry.balance)} <span className="text-xs text-muted">コイン</span>
+      <div className="mt-1 overflow-x-auto">
+        <div className="whitespace-nowrap font-mono tabular-nums text-ink">
+          {yen(entry.balance)} <span className="text-xs text-muted">コイン</span>
+        </div>
+        {spent > 0 && (
+          <div className="whitespace-nowrap text-xs text-muted">
+            使用 {yen(spent)}
+            {entry.gachaCount > 0 ? `(ガチャ${entry.gachaCount}回)` : ""}
           </div>
-          {spent > 0 && (
-            <div className="whitespace-nowrap text-xs text-muted">
-              使用 {yen(spent)}
-              {entry.gachaCount > 0 ? `(ガチャ${entry.gachaCount}回)` : ""}
-            </div>
-          )}
-        </div>
+        )}
+      </div>
 
-        <div className="flex shrink-0 gap-1">
-          <button
-            type="button"
-            onClick={startEdit}
-            aria-label="編集"
-            className="rounded-md px-2 py-1 text-xs text-muted hover:text-gold-bright"
-          >
-            編集
-          </button>
-          <button
-            type="button"
-            onClick={remove}
-            aria-label="削除"
-            className="rounded-md px-2 py-1 text-xs text-muted hover:text-rust"
-          >
-            削除
-          </button>
-        </div>
+      <div className="mt-1.5 flex justify-end gap-1">
+        <button
+          type="button"
+          onClick={startEdit}
+          aria-label="編集"
+          className="rounded-md px-2 py-1 text-xs text-muted hover:text-gold-bright"
+        >
+          編集
+        </button>
+        <button
+          type="button"
+          onClick={remove}
+          aria-label="削除"
+          className="rounded-md px-2 py-1 text-xs text-muted hover:text-rust"
+        >
+          削除
+        </button>
       </div>
     </li>
   );
