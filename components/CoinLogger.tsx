@@ -3,10 +3,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { Entry, computeDailyEarnings, computeSummary } from "@/lib/earnings";
 import BalanceInput from "./BalanceInput";
+import CalendarView from "./CalendarView";
 import CoinChart from "./CoinChart";
 import EntryHistory from "./EntryHistory";
 
 type Status = "loading" | "ready" | "error";
+type Tab = "record" | "calendar";
 
 type EntryDraft = { date: string; balance: number; gachaCount: number; unlockSpent: number };
 type EntryPatch = Partial<EntryDraft>;
@@ -18,6 +20,7 @@ function yen(n: number): string {
 export default function CoinLogger() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [status, setStatus] = useState<Status>("loading");
+  const [tab, setTab] = useState<Tab>("record");
 
   // Does not set "loading" itself — the initial state already is "loading",
   // and the retry button sets it explicitly before calling this again.
@@ -129,26 +132,56 @@ export default function CoinLogger() {
   const summary = computeSummary(entries);
 
   return (
-    <main className="mx-auto w-full max-w-md flex-1 space-y-4 px-4 py-8">
-      <header className="coin-settle space-y-4 rounded-2xl bg-surface p-5">
-        <div>
-          <p className="font-display text-xs tracking-[0.3em] text-muted">ツム貯金</p>
-          <p className="mt-1 text-sm text-muted">所持コイン</p>
-          <p className="font-mono text-4xl font-bold tabular-nums text-gold-bright">
-            {summary.currentBalance !== null ? yen(summary.currentBalance) : "―"}
-          </p>
-        </div>
-        <div className="grid grid-cols-3 gap-2 border-t border-bg pt-3 text-center">
-          <StatTile label="今月の稼ぎ" value={yen(summary.monthEarned)} />
-          <StatTile label="1日平均" value={yen(summary.dailyAverage)} />
-          <StatTile label="最高記録" value={summary.best ? yen(summary.best.earned) : "―"} />
-        </div>
-      </header>
+    <>
+      <main className="mx-auto w-full max-w-md flex-1 space-y-4 px-4 pb-24 pt-8">
+        <header className="coin-settle space-y-4 rounded-2xl bg-surface p-5">
+          <div>
+            <p className="font-display text-xs tracking-[0.3em] text-muted">ツム貯金</p>
+            <p className="mt-1 text-sm text-muted">所持コイン</p>
+            <p className="font-mono text-4xl font-bold tabular-nums text-gold-bright">
+              {summary.currentBalance !== null ? yen(summary.currentBalance) : "―"}
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-2 border-t border-bg pt-3 text-center">
+            <StatTile label="今月の稼ぎ" value={yen(summary.monthEarned)} />
+            <StatTile label="1日平均" value={yen(summary.dailyAverage)} />
+            <StatTile label="最高記録" value={summary.best ? yen(summary.best.earned) : "―"} />
+          </div>
+        </header>
 
-      <BalanceInput lastEntry={lastEntry} existingEntries={entries} onSubmit={submit} />
-      <CoinChart dailyEarnings={dailyEarnings} />
-      <EntryHistory entries={entries} dailyEarnings={dailyEarnings} onEdit={edit} onDelete={remove} />
-    </main>
+        {tab === "record" ? (
+          <>
+            <BalanceInput lastEntry={lastEntry} existingEntries={entries} onSubmit={submit} />
+            <CoinChart dailyEarnings={dailyEarnings} />
+            <EntryHistory entries={entries} dailyEarnings={dailyEarnings} onEdit={edit} onDelete={remove} />
+          </>
+        ) : (
+          <CalendarView entries={entries} dailyEarnings={dailyEarnings} />
+        )}
+      </main>
+
+      <nav
+        className="fixed inset-x-0 bottom-0 z-10 border-t border-bg bg-surface"
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      >
+        <div className="mx-auto flex w-full max-w-md">
+          <TabButton label="記録" active={tab === "record"} onClick={() => setTab("record")} />
+          <TabButton label="カレンダー" active={tab === "calendar"} onClick={() => setTab("calendar")} />
+        </div>
+      </nav>
+    </>
+  );
+}
+
+function TabButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex-1 py-3 text-sm font-bold transition-colors ${active ? "text-gold-bright" : "text-muted"}`}
+    >
+      {label}
+    </button>
   );
 }
 
