@@ -104,7 +104,7 @@ export default function BalanceInput({ lastEntry, existingEntries, onSubmit }: P
           step={1}
           min={0}
           onChange={setGachaCount}
-          displayValue={`${gachaCount} 回`}
+          unit="回"
           hint={`= ${yen(gachaCount * GACHA_COST)} コイン`}
         />
         <Stepper
@@ -113,7 +113,6 @@ export default function BalanceInput({ lastEntry, existingEntries, onSubmit }: P
           step={UNLOCK_STEP}
           min={0}
           onChange={setUnlockSpent}
-          displayValue={yen(unlockSpent)}
           hint="コイン"
         />
       </div>
@@ -149,7 +148,7 @@ function Stepper({
   step,
   min,
   onChange,
-  displayValue,
+  unit,
   hint,
 }: {
   label: string;
@@ -157,7 +156,7 @@ function Stepper({
   step: number;
   min: number;
   onChange: (v: number) => void;
-  displayValue: string;
+  unit?: string;
   hint: string;
 }) {
   return (
@@ -172,7 +171,18 @@ function Stepper({
         >
           −
         </button>
-        <span className="flex-1 text-center font-mono tabular-nums text-ink">{displayValue}</span>
+        {/* Directly editable — some days this needs to go to 50+, which no
+            amount of tapping +1 makes pleasant. */}
+        <input
+          type="number"
+          inputMode="numeric"
+          min={min}
+          value={value === 0 ? "" : value}
+          placeholder="0"
+          onChange={(e) => onChange(Math.max(min, Math.round(Number(e.target.value) || 0)))}
+          className="w-0 min-w-0 flex-1 appearance-none bg-transparent text-center font-mono tabular-nums text-ink outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        />
+        {unit && <span className="shrink-0 pr-1 text-xs text-muted">{unit}</span>}
         <button
           type="button"
           onClick={() => onChange(value + step)}
